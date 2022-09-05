@@ -30,6 +30,7 @@ Once you've got Python installed,
    $ sudo apt install aptitude
 ```
 	$ git clone https://github.com/daygumon/orpheusbetter-crawler
+	
 	$ cd orpheusbetter-crawler/
 
 you will need a few modules: mechanize,
@@ -49,7 +50,7 @@ lame, and sox. The method of installing these programs varies
 depending on your operating system, but if you're using something like
 Ubuntu you can do this:
 
-    # sudo aptitude install mktorrent flac lame sox
+    $ sudo aptitude install mktorrent flac lame sox
 	
 
 If you are on a seedbox and you lack the privilages to install packages,
