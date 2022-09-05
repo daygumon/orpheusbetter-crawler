@@ -16,10 +16,22 @@ Installation
 You're going to need to install a few dependencies before using
 orpheusbetter.
 
+    $ sudo apt-get update && sudo apt-get upgrade
+
 First and foremost, you will need Python 3.6 or newer. NOTE: this version
 has been ported to Python 3.x and will not run under Python 2.x.
 
-Once you've got Python installed, you will need a few modules: mechanize,
+Once you've got Python installed, 
+```
+   $ sudo apt-get install python3-pip
+   $ sudo apt-get install git
+   $ sudo apt install aptitude
+```
+`$ git clone https://github.com/ApexWeed/orpheusbetter-crawler`
+
+`$ cd orpheusbetter-crawler/`
+
+you will need a few modules: mechanize,
 mutagen, and requests. Try this:
 
     $ pip3 install -r requirements.txt
