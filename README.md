@@ -27,7 +27,7 @@ Once you've got Python installed,
    $ sudo apt-get install git
    $ sudo apt install aptitude
 ```
-`$ git clone https://github.com/ApexWeed/orpheusbetter-crawler`
+`$ git clone https://github.com/daygumon/orpheusbetter-crawler`
 
 `$ cd orpheusbetter-crawler/`
 
