@@ -21,6 +21,8 @@ orpheusbetter.
 First and foremost, you will need Python 3.6 or newer. NOTE: this version
 has been ported to Python 3.x and will not run under Python 2.x.
 
+    $ sudo apt install python3
+
 Once you've got Python installed, 
 ```
    $ sudo apt-get install python3-pip
