@@ -48,7 +48,7 @@ lame, and sox. The method of installing these programs varies
 depending on your operating system, but if you're using something like
 Ubuntu you can do this:
 
-    # aptitude install mktorrent flac lame sox
+    # sudo aptitude install mktorrent flac lame sox
 	
 
 If you are on a seedbox and you lack the privilages to install packages,
@@ -56,7 +56,7 @@ you could contact your provider to have these packages installed.
 
 At this point you may execute the following command:
 
-    $ orpheusbetter
+    $ ./orpheusbetter
 
 And you will receive a notification stating that you should edit the
 configuration file \~/.orpheusbetter/config (if you're lucky).
@@ -65,7 +65,13 @@ Configuration
 -------------
 
 You've made it far! Congratulations. Open up the file
-\~/.orpheusbetter/config in a text editor. You're going to see something
+\~/.orpheusbetter/config in a text editor. 
+
+$ cd
+$ cd ./orpheusbetter
+$ vim config
+
+You're going to see something
 like this:
 
     [whatcd]
@@ -82,6 +88,8 @@ like this:
     mode = both
     source = OPS
 
+To edit the config file with vim, after entering the file via `$ vim config`, press 'Esc' key, type `:i`, press 'Enter' key, make whatever edits you need, press 'Esc' key, type `:wq` , press 'Enter' key.
+
 `username` and `password` are your Orpheus login credentials. 
 
 `data_dir` is the directory where your downloads are stored. 
@@ -90,8 +98,23 @@ like this:
 the value is blank, `data_dir` will be used. You can also specify
 per format values such as `output_dir_320` or `output_dir_v0`.
 
-`torrent_dir` is the directory where torrents should be created (e.g.,
+	Output directory can be bitrate-specific:
+
+	output_dir_320 = /mnt/h/OPS-MP3_320
+	output_dir_V0 = /mnt/h/OPS-MP3_V0
+	output_dir_V2 = /mnt/h/OPS-MP3_V2 -> V2 is planned to be depreciated/deleted and already does not generate BP so no point in using anymore
+
+`torrent_dir` is the directory where you want the newly created by orpheusbetter torrent files to go in (e.g.,
 your watch directory). Same per format settings as output_dir apply.
+
+	data_dir = /mnt/c/FLAC -> For a C/ drive. The data directory is where the FLACs are at.
+	output_dir = /mnt/d/OPS-MP3
+	torrent_dir = /mnt/d/OPS-torrents
+	
+If you want to mount a networked drive, from a NAS or another server, enter:
+
+	$ sudo mkdir /mnt/d
+	$ sudo mount -t drvfs D: /mnt/d
 
 `formats` is a list of formats that you'd like to support
 (so if you don't want to upload V2, just remove it from this list).
@@ -121,6 +144,9 @@ a prompt will appear. The default is '0' which ignores these occurrences.
 
  `source` is the source flag to put on created torrents, leave blank if you're
  running mktorrent 1.0.
+
+
+
 
 You should end up with something like this:
 
@@ -179,20 +205,40 @@ optional arguments:
 Examples
 --------
 
-To transcode and upload every snatch you've ever downloaded along with all
+Running orpheusbetter from the orpheusbetter-crawler directory will start the script to transcode and upload every snatch you've ever downloaded along with all
 your uploads (this may take a while):
 
-    $ orpheusbetter
+    $ cd /orpheusbetter-crawler/
+    $ ./orpheusbetter
 
-To transcode and upload a specific release (provided you have already
-downloaded the FLAC and it is located in your `data_dir`):
+If you want to only transcode specific torrents, copy the permalink from the site -> [PL], and in the orpheusbetter-crawler dirctory, create a new file using:
 
-    $ orpheusbetter https://orpheus.network/torrents.php?id=1000\&torrentid=1000000
+	$ touch list.txt
+	
+Paste each permalink on its own line in this list.txt file. Do not leave any blank lines in the file. Example list.txt file:
+
+	https://orpheus.network/torrents.php?id=725581&torrentid=1589696#torrent1589696
+	https://orpheus.network/torrents.php?id=13596&torrentid=1925158#torrent1925158
+	https://orpheus.network/torrents.php?id=696123&torrentid=1533810#torrent1533810
+	fix https://orpheus.network/torrents.php?id=696123&torrentid=1533810#torrent1533810
+
+To transcode from the list, enter:
+
+	$ ./orpheusbetter list
+
+To transcode and upload a specific release (provided you have already downloaded the FLAC and it is located in your `data_dir`), copy the permalink from the site -> [PL], and add a backslash before the '&torrentid':
+
+	$ ./orpheusbetter https://orpheus.network/torrents.php?id=725581\&torrentid=1589696#torrent1589696
+
+
+And that's about it!
 
 Note that if you specify a particular release(s), orpheusbetter will
 ignore your configuration's media types and attempt to transcode the
 releases you have specified regardless of their media type (so long as
 they are lossless types).
+
+    $ ./orpheusbetter -U https://orpheus.network/torrents.php?id=1000\&torrentid=1000000
 
 Your first time running orpheusbetter might take a while, but after it has
 successfully gone through and checked everything, it'll go faster any
