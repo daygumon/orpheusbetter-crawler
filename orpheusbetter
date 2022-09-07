@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from cProfile import label
 import configparser
 import argparse
 import pickle
@@ -20,18 +21,127 @@ if sys.version_info < (3, 6, 0):
     raise Exception("Requires Python 3.6.0 or newer")
 
 def banner():
-    return "Created with version of orpheusbetter-crawler {0}. Maintained by  ApexWeed\n" \
+    return "Created with orpheusbetter-crawler {0} (daygumon's version)\nOriginal maintained by ApexWeed\n" \
            "This transcoding was done by an autonomous system".format(__version__)
 
-def create_description(torrent, flac_dir, format, permalink):
+def create_description(group, torrent, flac_dir, format, permalink):
     # Create an example command to document the transcode process.
     cmds = transcode.transcode_commands(format,
                                         transcode.needs_resampling(flac_dir),
                                         transcode.resample_rate(flac_dir),
             'input.flac', 'output' + transcode.encoders[format]['ext'])
+    """
+    Transcode process:
+
+    flac -dcs -- input.flac | lame -S -V 0 --vbr-new --ignore-tag-errors - output.mp3
+    
+    """
+
+
+
+
+
+
+    """
+    Transcode of 
+[url=https://orpheus.network/torrents.php?torrentid=999665]2010 – Big Machine Records / BTMSR0300A / CD 
+FLAC /  Lossless / Log (100%) / Cue [/url]
+
+
+2010 – Big Machine Records / BTMSR0300A / CD
+
+2010 – Big Machine Records / BTMSR0300A / Deluxe Edition / CD
+
+    """
+
+    #2010 – Big Machine Records / BTMSR0300A / Deluxe Edition / CD
+    if torrent['remastered']:
+        """
+            release_edition = filter('', torrent['remasterRecordLabel'], \
+            torrent['remasterCatalogueNumber'], torrent['remasterTitle'], \
+            torrent['media']   
+        """
+        remaster_year = str(torrent['remasterYear'])
+        remaster_title = torrent['remasterTitle']
+        remaster_record_label= torrent['remasterRecordLabel']
+        remaster_catalogue_number = torrent['remasterCatalogueNumber']
+        remaster_media = torrent['media']
+
+       
+    else:
+        remaster_year = str(group['group']['year'])
+        remaster_title = 'Original Release'
+        remaster_record_label= group['group']['recordLabel']
+        remaster_catalogue_number = group['group']['catalogueNumber']
+        remaster_media = torrent['media']
+
+
+    remaster_edition = (remaster_record_label, remaster_catalogue_number, remaster_title, remaster_media)
+
+    
+    # remaster_edition = ['Big Machine Records', 'BTMSR0300A', 'Deluxe Edition', 'CD']
+    remaster_edition = tuple(filter(lambda x : x != '', remaster_edition))
+    remaster_edition = ' / '.join(remaster_edition)
+
+    # release = ['2010','Big Machine Records / BTMSR0300A / Deluxe Edition / CD']
+    release = (remaster_year, remaster_edition)
+    # release = ['2010','Big Machine Records / BTMSR0300A / Deluxe Edition / CD']
+    release = tuple(filter(lambda x : x != '', release))
+    # release = ['2010','Big Machine Records / BTMSR0300A / Deluxe Edition / CD']
+    release = ' - '.join(release)
+
+
+    #FLAC /  Lossless / Log (100%) / Cue
+    meta_format = torrent['format']
+    meta_encoding = torrent['encoding']
+
+    if torrent['hasLog']:
+        meta_log = 'Log' + ' (' + str(torrent['logScore']) + '%)'
+    else:
+        meta_log = ''
+    if torrent['hasCue']:
+        meta_cue = 'Cue'
+    else:
+        meta_cue = ''
+    if torrent['scene']:
+        meta_scene = 'Scene'
+    else:
+        meta_scene = ''
+
+
+    # meta = FLAC / Lossless / Log (100%) / Cue / Scene
+    meta = (meta_format, meta_encoding, meta_log, meta_cue, meta_scene)
+    meta = tuple(filter(lambda x : x != '', meta))
+    meta = ' / '.join(meta)
+
+    '''
+    2010 - Big Machine Records / BTMSR0300A / Deluxe Edition / CD 
+    FLAC / Lossless / Log (100%) / Cue / Scene
+    '''
+    url_title = release + '\n' + meta
+    
+
+    """
+    else:
+         link_title =  group['group']['year'] + group['group']['recordLabel']
+        link_title = '{0}{1}{2}'.format(group['group']['year'], test)
+        form['remaster'] = True
+        form['remaster_year'] = str(torrent['remasterYear'])
+        form['remaster_title'] = torrent['remasterTitle']
+        form['remaster_record_label'] = torrent['remasterRecordLabel']
+        form['remaster_catalogue_number'] = torrent['remasterCatalogueNumber']
+    else:
+        form['remaster'] = True
+        form['remaster_year'] = group['group']['year']
+        form['remaster_title'] = ''
+        form['remaster_record_label'] = group['group']['recordLabel']
+        form['remaster_catalogue_number'] = group['group']['catalogueNumber']
+    """
 
     description = [
-        'Transcode of [url={0}]{0}[/url]'.format(permalink),
+        'Transcode of:',
+        '', 
+        '[url={0}]{1}[/url]'.format(permalink, url_title),
         '',
         'Transcode process:',
         '',
@@ -42,6 +152,8 @@ def create_description(torrent, flac_dir, format, permalink):
     return description
 
 def formats_needed(group, torrent, supported_formats):
+    
+    # supported_formats is the list of formats you set in config file formats = flac, v0, 320, v2 
     if '' in supported_formats: supported_formats.remove('')
     same_group = lambda t: t['media'] == torrent['media'] and\
                            t['remasterYear'] == torrent['remasterYear'] and\
@@ -54,6 +166,9 @@ def formats_needed(group, torrent, supported_formats):
     missing_formats = [format for format, details in [(f, whatapi.formats[f]) for f in supported_formats]\
                            if (details['format'], details['encoding']) not in current_formats]
     allowed_formats = whatapi.allowed_transcodes(torrent)
+    # hard coded options: [FLAC, 320, V0]
+    # return ['320']
+    
     return [format for format in missing_formats if format in allowed_formats]
 
 def main():
@@ -89,13 +204,14 @@ def main():
         config.set('orpheus', 'data_dir', '')
         config.set('orpheus', 'output_dir', '')
         config.set('orpheus', 'torrent_dir', '')
-        config.set('orpheus', 'formats', 'flac, v0, 320')
+        config.set('orpheus', 'formats', 'flac, 320, v0')
         config.set('orpheus', 'media', ', '.join(whatapi.lossless_media))
         config.set('orpheus', '24bit_behaviour','0')
         config.set('orpheus', 'tracker', 'https://home.opsfet.ch/')
         config.set('orpheus', 'mode', 'both')
         config.set('orpheus', 'api', 'https://orpheus.network')
         config.set('orpheus', 'source', 'OPS')
+        config.set('orpheus', 'formats_forced', '0')
         config.write(open(args.config, 'w'))
         print("Please edit the configuration file: {0}".format(args.config))
         sys.exit(2)
@@ -103,6 +219,7 @@ def main():
         username = config.get('orpheus', 'username')
         password = config.get('orpheus', 'password')
         do_24_bit = config.get('orpheus', '24bit_behaviour')
+        formats_forced = config.get('orpheus', 'formats_forced')
         data_dir = [os.path.expanduser(d) for d in config.get('orpheus', 'data_dir').split(';')]
         try:
             output_dir = os.path.expanduser(config.get('orpheus', 'output_dir'))
@@ -112,7 +229,11 @@ def main():
             output_dir = data_dir[0]
         torrent_dir = os.path.expanduser(config.get('orpheus', 'torrent_dir'))
         supported_formats = [format.strip().upper() for format in config.get('orpheus', 'formats').split(',')]
-
+        # 'formats', 'flac, v0, 320' which are the formats in config file formats
+        # strip() remove spaces at the beginning and at the end of the string
+        # upper() upper case the string
+        # split() Split a string into a list where each word is a list item: ['welcome', 'to', 'the', 'jungle']
+        # supported_formats = ['FLAC', '320', 'V0']
         try:
             media_config = config.get('orpheus', 'media')
             if not media_config:
@@ -268,7 +389,13 @@ def main():
             print("This is a multichannel release, which is unsupported - skipping")
             continue
 
-        needed = formats_needed(group, torrent, supported_formats)
+        # Check if user selected to force the formats in config
+        # If yes, then all of the formats in config are forced to be needed
+
+        if int(formats_forced) == 1:  
+            needed = supported_formats
+        else:
+            needed = formats_needed(group, torrent, supported_formats)
         print("Formats needed: {0}".format(', '.join(needed)))
 
         if needed:
@@ -306,7 +433,50 @@ def main():
                     new_torrent = transcode.make_torrent(transcode_dir, tmpdir, tracker, api.passkey, source)
                     if upload_torrent:
                         permalink = api.permalink(torrent)
-                        description = create_description(torrent, flac_dir, format, permalink)
+                        description = create_description(group, torrent, flac_dir, format, permalink)
+                       
+                        """
+
+
+
+                        "remastered": false,
+                        "remasterYear": 0,
+                        "remasterTitle": "",
+                        "remasterRecordLabel": "",
+                        "remasterCatalogueNumber": "",
+
+
+                         unknown - (bool) Unknown Release
+
+                        remaster - (bool) Is a remaster or not
+
+                        remaster_year - (int) Edition year
+
+                        remaster_title - (str) Edition title
+
+                        remaster_record_label - (str) Edition record label
+
+                        remaster_catalogue_number - (str) Edition catalog number
+                        """
+                        # desc - (str) Description for non-music torrents
+                        """
+                        commoner BT (Elite) 
+
+                        @daygumon, when uploading, please always tick the 'edition information' checkbox and fill in the appropriate data there. 
+                        The FLAC and MP3 sections still won't be merged automatically, but at least then we can do it in a few clicks, 
+                        rather than having to input all the information manually.
+
+                        I've also filed a bug report for it: "Original release" torrents not always in the same section
+                        """
+                        # Always upload with the Remaster Edition checked and entered
+
+                        """
+                        remaster = True
+                        remaster_year = torrent['remasterYear']
+                        remaster_title = torrent['remasterTitle']
+                        remaster_record_label = torrent['remasterRecordLabel']
+                        remaster_catalogue_number = torrent['remasterCatalogueNumber']
+                        """
                         api.upload(group, torrent, new_torrent, format, description)
                     shutil.copy(new_torrent, local_torrent_dir)
                     print("done!")
@@ -325,3 +495,12 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
+
+
+
+
