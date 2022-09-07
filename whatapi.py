@@ -232,6 +232,22 @@ class WhatAPI:
         torrent_field = form.form.find('input', attrs={'id': 'file'})
         if torrent_field:
             torrent_field.attrs['disabled'] = 'disabled'
+        """
+                        commoner BT (Elite) 
+
+                        @daygumon, when uploading, please always tick the 'edition information' checkbox and fill in the appropriate data there. 
+                        The FLAC and MP3 sections still won't be merged automatically, but at least then we can do it in a few clicks, 
+                        rather than having to input all the information manually.
+
+                        I've also filed a bug report for it: "Original release" torrents not always in the same section
+                        
+                        # Always upload with the Remaster Edition checked and entered
+        """
+
+
+
+
+
 
         if torrent['remastered']:
             form['remaster'] = True
@@ -240,10 +256,11 @@ class WhatAPI:
             form['remaster_record_label'] = torrent['remasterRecordLabel']
             form['remaster_catalogue_number'] = torrent['remasterCatalogueNumber']
         else:
-            form['remaster_year'] = ''
+            form['remaster'] = True
+            form['remaster_year'] = group['group']['year']
             form['remaster_title'] = ''
-            form['remaster_record_label'] = ''
-            form['remaster_catalogue_number'] = ''
+            form['remaster_record_label'] = group['group']['recordLabel']
+            form['remaster_catalogue_number'] = group['group']['catalogueNumber']
 
         form['format'] = formats[format]['format']
         form['bitrate'] = formats[format]['encoding']
