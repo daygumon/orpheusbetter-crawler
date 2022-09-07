@@ -44,13 +44,13 @@ def create_description(group, torrent, flac_dir, format, permalink):
 
     """
     Transcode of 
-[url=https://orpheus.network/torrents.php?torrentid=999665]2010 – Big Machine Records / BTMSR0300A / CD 
+[url=https://orpheus.network/torrents.php?torrentid=999665]2010 - Big Machine Records / BTMSR0300A / CD 
 FLAC /  Lossless / Log (100%) / Cue [/url]
 
 
-2010 – Big Machine Records / BTMSR0300A / CD
+2010 - Big Machine Records / BTMSR0300A / CD
 
-2010 – Big Machine Records / BTMSR0300A / Deluxe Edition / CD
+2010 - Big Machine Records / BTMSR0300A / Deluxe Edition / CD
 
     """
 
