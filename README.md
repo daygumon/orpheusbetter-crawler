@@ -8,7 +8,7 @@ The following command will scan through every FLAC you have ever
 downloaded or uploaded (if it is in , determine which formats are needed, transcode
 the FLAC to each needed format, and upload each format to Orpheus -- automatically.
 
-    $ orpheusbetter
+    $ ./orpheusbetter
 
 Installation
 ------------
@@ -69,9 +69,9 @@ Configuration
 You've made it far! Congratulations. Open up the file
 \~/.orpheusbetter/config in a text editor. 
 
-$ cd
-$ cd ./orpheusbetter
-$ vim config
+    $ cd
+    $ cd ./orpheusbetter
+    $ vim config
 
 You're going to see something
 like this:
@@ -147,7 +147,7 @@ a prompt will appear. The default is '0' which ignores these occurrences.
  `source` is the source flag to put on created torrents, leave blank if you're
  running mktorrent 1.0.
 
-
+`formats_forced` is whether to force transcoding the supported `formats`, '0' is false, '1' is true
 
 
 You should end up with something like this:
@@ -165,6 +165,7 @@ You should end up with something like this:
     api = https://orpheus.network
     mode = both
     source = OPS
+    formats_forced = 0
 
 Alright! Now you're ready to use orpheusbetter.
 
@@ -226,7 +227,7 @@ Paste each permalink on its own line in this list.txt file. Do not leave any bla
 
 To transcode from the list, enter:
 
-	$ ./orpheusbetter list
+	$ ./orpheusbetter list.txt
 
 To transcode and upload a specific release (provided you have already downloaded the FLAC and it is located in your `data_dir`), copy the permalink from the site -> [PL], and add a backslash before the '&torrentid':
 
